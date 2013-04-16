@@ -1,26 +1,30 @@
 (ns metis.util
-  (:use [clojure.string :only [blank? replace replace-first lower-case] :rename {blank? str-blank? replace str-replace}]))
+  (:require [metis.protocols :as protocols]
+            [clojure.string :as cstr]))
 
 (defn blank? [attr]
   (cond
-    (string? attr) (str-blank? attr)
+    (string? attr) (cstr/blank? attr)
     (coll? attr) (empty? attr)
     :else false))
 
 (defn present? [attr]
   (not (or (blank? attr) (nil? attr))))
 
+;; TODO cond here
 (defn formatted? [attr pattern]
   (when (nil? pattern)
     (throw (Exception. "Pattern to match with not given.")))
   (when (not (nil? attr))
     (not (nil? (re-matches pattern attr)))))
 
+;; TODO parseInt here
 (defn str->int [s]
   (try
     (Integer. s)
     (catch NumberFormatException e)))
 
+;; TODO parseFloat?  Probably 
 (defn str->float [s]
   (try
     (Float. s)
@@ -29,15 +33,13 @@
 (defn keyword->str [k]
   (str (name k)))
 
-(defprotocol Includable
-  (includes? [this item]))
-
-(extend-protocol Includable
+(extend-protocol protocols/Includable
   clojure.lang.Seqable
   (includes? [this item]
     (not (nil? (some #(= item %) this)))))
 
 (def capital #"[A-Z]")
 (defn spear-case [s]
-  (let [s (or (replace-first s capital (fn [c] (lower-case c))) s)]
-    (or (str-replace s capital (fn [c] (str "-" (lower-case c)))) s)))
+  (let [s (or (cstr/replace-first s capital (fn [c] (cstr/lower-case c))) s)]
+    (or (cstr/replace s capital (fn [c] (str "-" (cstr/lower-case c)))) s)))
+

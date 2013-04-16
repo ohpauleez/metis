@@ -1,7 +1,7 @@
 (ns metis.core
-  (:use
-    [metis.util]
-    [clojure.set :only [union]]))
+  (:require [metis.protocols :as protocols])
+  (:use [metis.util]
+        [clojure.set :only [union]]))
 
 (defn should-run? [record attr options context]
   (let [{:keys [allow-nil allow-blank allow-absence only except if]
@@ -26,10 +26,8 @@
       (not (if-condition record))
       (if-not-condition record)))))
 
-(defprotocol AsString
-  (->string [this]))
-
-(extend-protocol AsString
+;; TODO Refactor this to pull apart name/symbol dance, and accept Fns
+(extend-protocol protocols/AsString
   clojure.lang.Keyword
   (->string [this] (name this))
 
@@ -114,6 +112,10 @@
 (defn -expand-validations [validations]
   (-merge-validations (map -expand-validation validations)))
 
+(defmacro defvalidator [name & validations]
+  (def name (make-a-validator-fn validations)))
+
+;;TODO remove the `use` from here; put oneous on consumption
 (defmacro defvalidator [name & validations]
   (let [name (validator-name name)
         validations (vec validations)]
