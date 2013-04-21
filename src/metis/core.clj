@@ -119,10 +119,8 @@
 (defmacro defvalidator [name & validations]
   (let [name (validator-name name)
         validations (vec validations)]
-    `(do
-      (use 'metis.validators)
-      (let [validations# (-expand-validations ~validations)]
-        (defn ~name
-          ([record# attr# options#] (~name (attr# record#)))
-          ([record# context#] (-validate record# validations# context#))
-          ([record#] (-validate record# validations# nil)))))))
+    `(let [validations# (-expand-validations ~validations)]
+       (defn ~name
+         ([record# attr# options#] (~name (attr# record#)))
+         ([record# context#] (-validate record# validations# context#))
+         ([record#] (-validate record# validations# nil))))))
