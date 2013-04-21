@@ -76,29 +76,22 @@
     {}
     validations))
 
-(defn -parse-attributes [attributes]
-  (flatten [attributes]))
-
 (defn -parse-validations [validations]
-  (let [validations (flatten [validations])]
-    (loop [validations validations ret []]
-      (if (empty? validations)
-        ret
-        (let [cur (first validations)
-              next (second validations)]
-          (cond
-            (map? next)
-              (recur (rest (rest validations)) (conj ret [(validator-factory cur) next]))
-            (keyword? next)
-              (recur (rest validations) (conj ret [(validator-factory cur) {}]))
-            (nil? next)
-              (recur [] (conj ret [(validator-factory cur) {}]))))))))
+  (loop [validations validations ret []]
+    (if (empty? validations)
+      ret
+      (let [[cur next] validations]
+        (cond
+          (map? next)
+            (recur (rest (rest validations)) (conj ret [(validator-factory cur) next]))
+          (keyword? next)
+            (recur (rest validations) (conj ret [(validator-factory cur) {}]))
+          (nil? next)
+            (recur [] (conj ret [(validator-factory cur) {}])))))))
 
 (defn -parse
-  ([attrs validation args]
-   [(-parse-attributes attrs) (-parse-validations [validation args])])
-  ([attrs validations]
-   [(-parse-attributes attrs) (-parse-validations validations)]))
+  ([attrs validations & args]
+   [(flatten attrs) (-parse-validations (flatten [validation args]))]))
 
 (defn -merge-validations [validations]
   (apply merge-with union {} validations))
@@ -112,15 +105,15 @@
 (defn -expand-validations [validations]
   (-merge-validations (map -expand-validation validations)))
 
-(defmacro defvalidator [name & validations]
-  (def name (make-a-validator-fn validations)))
+;(defmacro defvalidator [name & validations]
+;  (def name (make-a-validator-fn validations)))
 
-;;TODO remove the `use` from here; put oneous on consumption
 (defmacro defvalidator [name & validations]
   (let [name (validator-name name)
         validations (vec validations)]
     `(let [validations# (-expand-validations ~validations)]
        (defn ~name
-         ([record# attr# options#] (~name (attr# record#)))
+         ([record#] (-validate record# validations# nil))
          ([record# context#] (-validate record# validations# context#))
-         ([record#] (-validate record# validations# nil))))))
+         ([record# attr# options#] (~name (attr# record#)))))))
+
