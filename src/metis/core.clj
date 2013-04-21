@@ -21,8 +21,8 @@
     (not (or
       (and allow-nil (nil? value))
       (and allow-blank (blank? value))
-      (and context (not (empty? only)) (not (includes? only context)))
-      (and context (not (empty? except)) (includes? except context))
+      (and context (seq only) (not (includes? only context)))
+      (and context (seq except) (includes? except context))
       (not (if-condition record))
       (if-not-condition record)))))
 
@@ -54,7 +54,7 @@
   (reduce
     (fn [errors [validator options]]
       (if-let [error (run-validation map key validator options context)]
-        (if (not (empty? error))
+        (if (seq error)
           (conj errors (or (:message options) error))
           errors)
         errors))
