@@ -5,9 +5,11 @@
 /native
 /target
 /.lein-failures
+*.lein-repl-history
 /checkouts
 *.lein-deps-sum
 *.iml
 *.idea
 *.DS_Store
+*.*.swp
 .lein-plugins
