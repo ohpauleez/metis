@@ -11,27 +11,20 @@
 (defn present? [attr]
   (not (or (blank? attr) (nil? attr))))
 
-;; TODO cond here
 (defn formatted? [attr pattern]
-  (when (nil? pattern)
-    (throw (Exception. "Pattern to match with not given.")))
-  (when (not (nil? attr))
-    (not (nil? (re-matches pattern attr)))))
+  (cond
+    (nil? pattern) (throw (Exception. "Pattern to match with not given."))
+    (not (nil? attr)) (not (nil? (re-matches pattern attr)))))
 
-;; TODO parseInt here
 (defn str->int [s]
   (try
-    (Integer. s)
+    (Integer/parseInt s)
     (catch NumberFormatException e)))
 
-;; TODO parseFloat?  Probably 
 (defn str->float [s]
   (try
-    (Float. s)
+    (Float/parseFloat s)
     (catch NumberFormatException e)))
-
-(defn keyword->str [k]
-  (str (name k)))
 
 (extend-protocol protocols/Includable
   clojure.lang.Seqable
